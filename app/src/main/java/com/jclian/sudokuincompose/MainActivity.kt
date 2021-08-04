@@ -1,7 +1,6 @@
 package com.jclian.sudokuincompose
 
 import android.content.Context
-import android.graphics.Path
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.os.Bundle
@@ -11,12 +10,9 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -26,8 +22,6 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.jclian.sudokuincompose.ui.theme.SudokuInComposeTheme
 
 class MainActivity : ComponentActivity() {
@@ -44,11 +38,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
-
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
@@ -58,11 +47,19 @@ fun DefaultPreview() {
 }
 
 
-@Preview(showBackground = true)
+@Preview(showBackground = false)
 @Composable
 fun Sudoku(context: Context?) {
     val paint = Paint().asFrameworkPaint()
-
+    var selected by remember {
+        mutableStateOf<Offset?>(null)
+    }
+    var selectedKey by remember {
+        mutableStateOf("")
+    }
+    var selectedNumber by remember {
+        mutableStateOf(-1)
+    }
     Canvas(modifier = Modifier
         .fillMaxSize()
         .pointerInput(Unit) {
@@ -75,12 +72,13 @@ fun Sudoku(context: Context?) {
                 val numBlockHeight = canvasWidth / 9
                 val x = (it.x / numBlockWidth).toInt()
                 val y = (it.y / numBlockWidth).toInt()
+                selectedKey = "$x,$y"
                 context?.let {
                     Toast
                         .makeText(context, "onTap: $x,$y ", Toast.LENGTH_SHORT)
                         .show()
                 }
-
+                selected = it
             })
         }) {
         val canvasWidth = size.width
@@ -125,11 +123,20 @@ fun Sudoku(context: Context?) {
             }
 
             for (j in 0 until 9) {
+                val key = "$i,$j"
                 val left = i * numBlockWidth
                 val top = j * numBlockHeight
                 val rectF = RectF(left, top, left + numBlockWidth, top + numBlockHeight)
 
                 // draw circle 画圆
+                // selected 判断点击是否在圆内
+                var circleColor = if(selectedKey == key) {
+
+                } else {
+
+                }
+
+
                 drawCircle(
                     center = Offset(
                         x = (numBlockWidth * i + numBlockWidth / 2f).toFloat(),
