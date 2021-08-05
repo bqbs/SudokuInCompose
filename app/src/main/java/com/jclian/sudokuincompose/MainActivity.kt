@@ -47,7 +47,6 @@ fun DefaultPreview() {
 }
 
 
-@Preview(showBackground = false)
 @Composable
 fun Sudoku(context: Context?) {
     val paint = Paint().asFrameworkPaint()
@@ -60,6 +59,9 @@ fun Sudoku(context: Context?) {
     var selectedNumber by remember {
         mutableStateOf(-1)
     }
+    var initMap by remember {
+        mutableStateOf(com.jclian.libsudoku.Sudoku.gen())
+    }
     Canvas(modifier = Modifier
         .fillMaxSize()
         .pointerInput(Unit) {
@@ -70,13 +72,17 @@ fun Sudoku(context: Context?) {
 
                 val numBlockWidth = canvasWidth / 9
                 val numBlockHeight = canvasWidth / 9
-                val x = (it.x / numBlockWidth).toInt()
-                val y = (it.y / numBlockWidth).toInt()
-                selectedKey = "$x,$y"
+                // calculate the key base x and y coordinates
+                // 根据x、y坐标计算计算选中的键值
+                val indexX = (it.x / numBlockWidth).toInt()
+                val indexY = (it.y / numBlockWidth).toInt()
+                selectedKey = "$indexX,$indexY"
                 context?.let {
-                    Toast
-                        .makeText(context, "onTap: $x,$y ", Toast.LENGTH_SHORT)
-                        .show()
+                    if (BuildConfig.DEBUG) {
+                        Toast
+                            .makeText(context, "onTap: $selectedKey ", Toast.LENGTH_SHORT)
+                            .show()
+                    }
                 }
                 selected = it
             })
@@ -94,10 +100,15 @@ fun Sudoku(context: Context?) {
             numBlockWidth * -0.2f
         )
 
+        paint.apply {
+            textSize = numBlockWidth * 0.6f
+            isAntiAlias = true
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            color = android.graphics.Color.WHITE
+            textAlign = android.graphics.Paint.Align.CENTER
+        }
         val textHeight: Float = paint.descent() - paint.ascent()
         val textOffset: Float = textHeight / 2 - paint.descent()
-        paint.textSize = (numBlockWidth * 0.8).toFloat()
-
         for (i in 0 until 9) {
 
             if (i != 0 && i != 9) {
@@ -128,39 +139,39 @@ fun Sudoku(context: Context?) {
                 val top = j * numBlockHeight
                 val rectF = RectF(left, top, left + numBlockWidth, top + numBlockHeight)
 
-                // draw circle 画圆
+                // pined num 初始化的值
+                val value = initMap[key]
+
                 // selected 判断点击是否在圆内
-                var circleColor = if(selectedKey == key) {
-
+                var circleColor = if (selectedKey == key) {
+                    Color.Yellow
                 } else {
-
+                    Color.Black
                 }
 
-
-                drawCircle(
-                    center = Offset(
-                        x = (numBlockWidth * i + numBlockWidth / 2f).toFloat(),
-                        y = (numBlockWidth * j + numBlockWidth / 2f).toFloat()
-                    ),
-                    radius = circleRadius.toFloat() / 2f,
-                    color = Color.Black
-                )
-
-                // using native draw to draw. can't find any solution in Compose
-                // draw number 画数字
-                paint.apply {
-                    isAntiAlias = true
-                    typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-                    color = android.graphics.Color.WHITE
-                    textAlign = android.graphics.Paint.Align.CENTER
-                }
-                drawIntoCanvas {
-                    it.nativeCanvas.drawText(
-                        "$j",
-                        rectF.centerX(),
-                        rectF.centerY() + textOffset,
-                        paint
+                // draw circle 画圆
+                if (value != null || selectedKey == key) {
+                    drawCircle(
+                        center = Offset(
+                            x = (numBlockWidth * i + numBlockWidth / 2f).toFloat(),
+                            y = (numBlockWidth * j + numBlockWidth / 2f).toFloat()
+                        ),
+                        radius = circleRadius.toFloat() / 2f,
+                        color = circleColor
                     )
+                }
+                // using native draw to draw. can't find any solution in Compose
+                // 使用原生的绘制方法绘制文本。在Compose中，暂时没有找到其他方案
+                // draw number 画数字
+                if (value != null) {
+                    drawIntoCanvas {
+                        it.nativeCanvas.drawText(
+                            "$value",
+                            rectF.centerX(),
+                            rectF.centerY() + textOffset,
+                            paint
+                        )
+                    }
                 }
             }
         }
