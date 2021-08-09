@@ -65,7 +65,7 @@ fun Sudoku(context: Context?) {
     }
 
     val answerMap by remember {
-        mutableStateOf(HashMap<String, Int>())
+        mutableStateOf(hashMapOf<String, Int>())
     }
 
     Column {
@@ -158,7 +158,7 @@ fun Sudoku(context: Context?) {
                         val rectF = RectF(left, top, left + numBlockWidth, top + numBlockHeight)
 
                         // pined num 初始化的值
-                        val value = initMap[key]
+                        var value = initMap[key]
 
                         // selected 判断点击是否在圆内
                         var circleColor = if (selectedKey == key) {
@@ -177,6 +177,11 @@ fun Sudoku(context: Context?) {
                                 radius = circleRadius.toFloat() / 2f,
                                 color = circleColor
                             )
+                        }
+                        paint.color = android.graphics.Color.WHITE
+                        if (value == null) {
+                            value = answerMap[key]
+                            paint.color = android.graphics.Color.BLACK
                         }
                         // using native draw to draw. can't find any solution in Compose
                         // 使用原生的绘制方法绘制文本。在Compose中，暂时没有找到其他方案
@@ -212,6 +217,14 @@ fun Sudoku(context: Context?) {
                                         Toast
                                             .makeText(context, "$number", Toast.LENGTH_SHORT)
                                             .show()
+                                    }
+
+                                    if (!initMap.containsKey(selectedKey)) {
+                                        if (number != 10) {
+                                            answerMap[selectedKey] = i * 5 + j
+                                        } else {
+                                            answerMap.remove(selectedKey)
+                                        }
                                     }
                                 })
                             }
