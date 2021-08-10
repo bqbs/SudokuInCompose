@@ -14,6 +14,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -24,6 +25,8 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
 import com.jclian.sudokuincompose.ui.theme.SudokuInComposeTheme
+import kotlin.properties.ObservableProperty
+import kotlin.reflect.KProperty
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,8 +67,9 @@ fun Sudoku(context: Context?) {
         mutableStateOf(com.jclian.libsudoku.Sudoku.gen())
     }
 
-    val answerMap by remember {
-        mutableStateOf(hashMapOf<String, Int>())
+    val hashmap = HashMap<String, Int>()
+    val answerMap = remember(hashmap) {
+        mutableStateMapOf(*hashmap.map { it.key to it.value }.toTypedArray())
     }
 
     Column {
@@ -221,7 +225,7 @@ fun Sudoku(context: Context?) {
 
                                     if (!initMap.containsKey(selectedKey)) {
                                         if (number != 10) {
-                                            answerMap[selectedKey] = i * 5 + j
+                                            answerMap.set(selectedKey, number)
                                         } else {
                                             answerMap.remove(selectedKey)
                                         }
