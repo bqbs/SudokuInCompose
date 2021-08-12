@@ -1,9 +1,11 @@
 pluginManagement {
     repositories {
-        mavenLocal()
         gradlePluginPortal()
         google()
         mavenCentral()
+        maven {
+            url = uri("https://maven.pkg.github.com/bqbs/SudokuLib")
+        }
     }
     plugins {
         id 'com.android.application' version '7.1.0-alpha06'
@@ -14,9 +16,16 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        mavenLocal()
+//        mavenLocal()
         google()
         mavenCentral()
+        maven {
+            url = uri("https://maven.pkg.github.com/bqbs/SudokuLib")
+            credentials {
+                username = "public"
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
 }
 rootProject.name = "SudokuInCompose"

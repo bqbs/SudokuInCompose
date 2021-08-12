@@ -226,6 +226,18 @@ fun Sudoku(context: Context?) {
                                     if (!initMap.containsKey(selectedKey)) {
                                         if (number != 10) {
                                             answerMap.set(selectedKey, number)
+
+                                            if (answerMap.size + initMap.size >= 81) {
+                                                // TODO: 2021/8/10 answer is fully filled
+                                                var hashMap = hashMapOf<String, Int>()
+                                                hashmap.putAll(initMap)
+                                                hashmap.putAll(answerMap)
+                                                val isSuccess =
+                                                    com.jclian.libsudoku.Sudoku.check(hashmap)
+                                                if(isSuccess){
+
+                                                }
+                                            }
                                         } else {
                                             answerMap.remove(selectedKey)
                                         }
