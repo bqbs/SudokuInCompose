@@ -3,28 +3,48 @@ package com.jclian.sudokuincompose
 import android.content.Context
 import android.graphics.RectF
 import android.graphics.Typeface
+import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
+import android.text.TextUtils
+import android.view.View.*
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import com.jclian.sudokuincompose.ui.theme.SudokuInComposeTheme
+import com.jclian.sudokuincompose.ui.theme.Typography
 import kotlin.properties.ObservableProperty
 import kotlin.reflect.KProperty
 
@@ -35,7 +55,7 @@ class MainActivity : ComponentActivity() {
             SudokuInComposeTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
-                    Sudoku(this@MainActivity)
+                    Sudoku()
                 }
             }
         }
@@ -46,13 +66,14 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun DefaultPreview() {
     SudokuInComposeTheme {
-        Sudoku(null)
+        Sudoku()
     }
 }
 
 
 @Composable
-fun Sudoku(context: Context?) {
+fun Sudoku() {
+    val context = LocalContext.current
     val paint = Paint().asFrameworkPaint()
     var selected by remember {
         mutableStateOf<Offset?>(null)
@@ -70,6 +91,10 @@ fun Sudoku(context: Context?) {
     val hashmap = HashMap<String, Int>()
     val answerMap = remember(hashmap) {
         mutableStateMapOf(*hashmap.map { it.key to it.value }.toTypedArray())
+    }
+
+    val showNewGame by remember {
+        mutableStateOf(false)
     }
 
     Column {
@@ -211,45 +236,74 @@ fun Sudoku(context: Context?) {
                 for (j in 1..5) {
                     val number = i * 5 + j
                     var txt = if (number >= 10) "X" else "$number"
-                    Box(
+                    Button(
                         modifier = Modifier
                             .weight(1f)
                             .aspectRatio(1f)
+                            .clip(CircleShape)
                             .pointerInput(Unit) {
-                                detectTapGestures(onTap = {
-                                    if (BuildConfig.DEBUG) {
-                                        Toast
-                                            .makeText(context, "$number", Toast.LENGTH_SHORT)
-                                            .show()
-                                    }
+                            }, onClick = {
 
-                                    if (!initMap.containsKey(selectedKey)) {
-                                        if (number != 10) {
-                                            answerMap.set(selectedKey, number)
+                            if (BuildConfig.DEBUG) {
+//                                Toast
+//                                    .makeText(context, "$number", Toast.LENGTH_SHORT)
+//                                    .show()
+                            }
 
-                                            if (answerMap.size + initMap.size >= 81) {
-                                                // TODO: 2021/8/10 answer is fully filled
-                                                var hashMap = hashMapOf<String, Int>()
-                                                hashmap.putAll(initMap)
-                                                hashmap.putAll(answerMap)
-                                                val isSuccess =
-                                                    com.jclian.libsudoku.Sudoku.check(hashmap)
-                                                if(isSuccess){
+                            if (!initMap.containsKey(selectedKey)) {
+                                if (number != 10) {
+                                    answerMap.set(selectedKey, number)
 
-                                                }
-                                            }
-                                        } else {
-                                            answerMap.remove(selectedKey)
+                                    if (answerMap.size + initMap.size >= 81) {
+                                        // TODO: 2021/8/10 answer is fully filled
+                                        var hashMap = hashMapOf<String, Int>()
+                                        hashMap.putAll(initMap)
+                                        hashMap.putAll(answerMap)
+                                        val isSuccess =
+                                            com.jclian.libsudoku.Sudoku.check(hashMap)
+                                        if (isSuccess) {
+                                            Toast
+                                                .makeText(
+                                                    context,
+                                                    "Solved",
+                                                    Toast.LENGTH_SHORT
+                                                )
+                                                .show()
                                         }
                                     }
-                                })
+                                } else {
+                                    answerMap.remove(selectedKey)
+                                }
                             }
-                    ) {
-                        Text(text = txt)
+
+                        }) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = txt,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .graphicsLayer(translationY = 25f),
+                                color = Color.White,
+                                maxLines = 1,
+                                textAlign = TextAlign.Center,
+                                fontSize = 36f.sp
+                            )
+                        }
+
                     }
                 }
             }
 
+        }
+
+        if (showNewGame) {
+            Row {
+                Button(onClick = {
+                    Toast.makeText(context, "new game", Toast.LENGTH_SHORT).show()
+                }) {
+                    Text(text = "Start New Game")
+                }
+            }
         }
     }
 
