@@ -1,19 +1,12 @@
 package com.jclian.sudokuincompose
 
-import android.content.Context
 import android.graphics.RectF
 import android.graphics.Typeface
-import android.graphics.drawable.ColorDrawable
-import android.os.Build
 import android.os.Bundle
-import android.text.TextUtils
-import android.view.View.*
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -22,31 +15,18 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.TextUnitType
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import com.jclian.sudokuincompose.ui.theme.SudokuInComposeTheme
-import com.jclian.sudokuincompose.ui.theme.Typography
-import kotlin.properties.ObservableProperty
-import kotlin.reflect.KProperty
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,16 +64,16 @@ fun Sudoku() {
     var selectedNumber by remember {
         mutableStateOf(-1)
     }
-    val initMap by remember {
+    var initMap by remember {
         mutableStateOf(com.jclian.libsudoku.Sudoku.gen())
     }
 
     val hashmap = HashMap<String, Int>()
-    val answerMap = remember(hashmap) {
+    var answerMap = remember(hashmap) {
         mutableStateMapOf(*hashmap.map { it.key to it.value }.toTypedArray())
     }
 
-    val showNewGame by remember {
+    var showNewGame by remember {
         mutableStateOf(false)
     }
 
@@ -262,13 +242,13 @@ fun Sudoku() {
                                         val isSuccess =
                                             com.jclian.libsudoku.Sudoku.check(hashMap)
                                         if (isSuccess) {
-                                            Toast
-                                                .makeText(
-                                                    context,
-                                                    "Solved",
-                                                    Toast.LENGTH_SHORT
-                                                )
-                                                .show()
+                                            // Puzzle Solved.And show up the new game button
+                                            Toast.makeText(
+                                                context,
+                                                "Solved",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            showNewGame = true
                                         }
                                     }
                                 } else {
@@ -286,7 +266,7 @@ fun Sudoku() {
                                 color = Color.White,
                                 maxLines = 1,
                                 textAlign = TextAlign.Center,
-                                fontSize = 36f.sp
+                                fontSize = 114.sp
                             )
                         }
 
@@ -297,9 +277,12 @@ fun Sudoku() {
         }
 
         if (showNewGame) {
-            Row {
+            Box(modifier = Modifier.fillMaxHeight(), contentAlignment = Alignment.Center) {
                 Button(onClick = {
+                    // new game. 重新开始游戏
                     Toast.makeText(context, "new game", Toast.LENGTH_SHORT).show()
+                    initMap = com.jclian.libsudoku.Sudoku.gen()
+                    answerMap.clear()
                 }) {
                     Text(text = "Start New Game")
                 }
